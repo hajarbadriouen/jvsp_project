@@ -9,17 +9,18 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection
-mongoose.connect("mongodb://127.0.0.1:27017/employees", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('Error connecting to MongoDB:', err));
+mongoose.connect("mongodb://127.0.0.1:27017/employees")
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Error connecting to MongoDB:', err));
+
+// Default route to check server
+app.get('/', (req, res) => {
+    res.send('Welcome to the backend!');
+});
 
 // Login route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-o
   try {
     const user = await EmployeeModel.findOne({ email });
 
@@ -36,8 +37,8 @@ o
     res.json("Success");
 
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", error.message);  // Log the error message
+    res.status(500).json({ message: "Server error", error: error.message }); // Include error details
   }
 });
 
