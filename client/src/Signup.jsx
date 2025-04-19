@@ -1,31 +1,37 @@
 import { Link } from 'react-router-dom';
 import { useState } from "react"; 
-import axios from 'axios'
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
-
+import PasswordInput from './PasswordInput'; // Import PasswordInput component for show/hide password functionality
+import './AuthForm.css';
 
 function Signup() { 
-  const [role, setRole] = useState(); // State for the role selection
-  const [name, setName] = useState(); // State for the name input
-  const [email, setEmail] = useState(); // State for the email input
-  const [password, setPassword] = useState(); // State for the password input
+  const [role, setRole] = useState(""); // State for the role selection
+  const [name, setName] = useState(""); // State for the name input
+  const [email, setEmail] = useState(""); // State for the email input
+  const [password, setPassword] = useState(""); // State for the password input
   const navigate = useNavigate(); // Initialize useNavigate for navigation
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate if role is selected
     if (!role) {
       alert('Please select a role!');
-      return; // Prevent submission if role is not selected
+      return;
     }
-    axios.post('http://localhost:3001/register', { name, email, password, role })
-    .then(result => {
-      console.log(result);
-      alert("Registered successfully!");
-      navigate('/login');
-    })    
+
+    // Trim password before submitting
+    const cleanPassword = password.trim();
+
+    axios.post('http://localhost:3001/register', { name, email, password: cleanPassword, role })
+      .then(result => {
+        console.log(result);
+        alert("Registered successfully!");
+        navigate('/login');
+      })    
       .catch(err => console.log(err));
-  }
-  
+  };
 
   // Handle role change
   const handleRoleChange = (event) => {
@@ -33,8 +39,8 @@ function Signup() {
   };
 
   return ( 
-    <div className="d-flex justify-content-center align-items-center bg-secondary vh-100"> 
-      <div className="bg-white p-3 rounded w-25"> 
+    <div className="signup-wrapper"> 
+      <div className="signup-form-container"> 
         <h2>Register</h2> 
         <form onSubmit={handleSubmit}> 
           <div className="mb-3"> 
@@ -46,8 +52,8 @@ function Signup() {
               placeholder="Enter Name" 
               autoComplete="off" 
               name="name" 
-              className="form-control rounded-0"
-              onChange={(e) => setName(e.target.value)} // Update name state on input change
+              className="form-control"
+              onChange={(e) => setName(e.target.value)} 
             />
           </div>
           
@@ -60,25 +66,17 @@ function Signup() {
               placeholder="Enter email"
               autoComplete="off"
               name="email"
-              className="form-control rounded-0"
+              className="form-control"
               onChange={(e) => setEmail(e.target.value)} 
             />
           </div>
-
-          <div className="mb-3">
-            <label htmlFor="password">
-              <strong>Password</strong>
-            </label>
-            <input
-              type="password"
-              placeholder="Enter password"
-              name="password"
-              className="form-control rounded-0"
-              onChange={(e) => setPassword(e.target.value)} // Update password state on input change
-            />
-          </div>
+  
+          <PasswordInput
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)} 
+          />
           
-          {/* Role Dropdown */}
           <div className="mb-3">
             <label htmlFor="role">
               <strong>Role</strong>
@@ -87,7 +85,7 @@ function Signup() {
               name="role"
               value={role}
               onChange={handleRoleChange}
-              className="form-control rounded-0"
+              className="form-control"
             >
               <option value="">Select Role</option>
               <option value="student">Student</option>
@@ -95,18 +93,18 @@ function Signup() {
             </select>
           </div>
           
-          <button type="submit" className="btn btn-success w-100 rounded-0">
+          <button type="submit" className="btn btn-success w-100">
             Register
           </button>  
         </form>
         
-        <p>Already have an Account?</p> 
-        <Link to="/login" className="btn btn-default border w-100 bg-light rounded-0 text-decoration-none">
-          Login
-        </Link>
+        <div className="login-link">
+          Already have an Account? <Link to="/login">Login</Link>
+        </div>
       </div>
     </div>
   );
+  
 }
 
 export default Signup;

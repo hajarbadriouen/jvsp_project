@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); // Import JWT for token creation
 const EmployeeModel = require('./models/Employee');
 
 const app = express();
@@ -12,73 +13,97 @@ app.use(cors());
 mongoose.connect("mongodb://127.0.0.1:27017/employees")
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
+console.log("MongoDB connection established.");
+// JWT secret key 
+const JWT_SECRET = 'your_jwt_secret_key'; 
 
-// Default route to check server
-app.get('/', (req, res) => {
-    res.send('Welcome to the backend!');
-});
+
 
 // Login route
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await EmployeeModel.findOne({ email });
+    
+    const { email, password } = req.body;
+    try {
+        const user = await EmployeeModel.findOne({ email: email });
+       
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+    
+        // Check if the password is correct
+        console.log(password, user.password)
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log("Password comparison result:", isPasswordValid); // Log for debugging
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid password" });
+        }
+        // Create JWT token
+        const token = jwt.sign(
+            { userId: user._id, role: user.role }, // Payload includes user ID and role
+            JWT_SECRET, // Secret key for encoding
+            { expiresIn: '1h' } // Token expiration time (1 hour in this case)
+        );
 
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
+        res.json({
+            message: "Login successful",
+            token:token, // Send the token in response
+            user: {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Login error:", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
-
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordMatch) {
-      return res.status(400).json({ message: "The password is incorrect" });
-    }
-
-    res.json("Success");
-
-  } catch (error) {
-    console.error("Login error:", error.message);  // Log the error message
-    res.status(500).json({ message: "Server error", error: error.message }); // Include error details
-  }
 });
 
 // Register route
 app.post('/register', async (req, res) => {
-  const { name, email, password, role } = req.body;
+   
+    console.log("Register route hit"); // Log for debugging
+    const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ message: 'Name, email, password, and role are required.' });
-  }
-
-  if (!['student', 'teacher'].includes(role)) {
-    return res.status(400).json({ message: 'Invalid role. Choose either "student" or "teacher".' });
-  }
-
-  try {
-    const existingEmployee = await EmployeeModel.findOne({ email });
-    if (existingEmployee) {
-      return res.status(400).json({ message: 'Email is already in use.' });
+    if (!name || !email || !password || !role) {
+        return res.status(400).json({ message: 'Name, email, password, and role are required.' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (!['student', 'teacher'].includes(role)) {
+        return res.status(400).json({ message: 'Invalid role. Choose either "student" or "teacher".' });
+    }
 
-    const newEmployee = new EmployeeModel({
-      name,
-      email,
-      password: hashedPassword,
-      role
-    });
+    try {
+        const cleanPassword = password.trim();  // Trim spaces from password
 
-    const savedEmployee = await newEmployee.save();
-    res.json(savedEmployee);
+        // Check if the user already exists
+        const existingEmployee = await EmployeeModel.findOne({ email });
+        if (existingEmployee) {
+            return res.status(400).json({ message: 'Email is already in use.' });
+        }
 
-  } catch (err) {
-    console.error('Error saving employee:', err);
-    res.status(500).json({ message: 'Error saving employee', error: err });
-  }
+        const hashedPassword = await bcrypt.hash(cleanPassword, 10);
+
+        const newEmployee = new EmployeeModel({
+            name,
+            email,
+            password: hashedPassword,
+            role
+        });
+        console.log("New employee object:", newEmployee); // Log for debugging
+
+        const savedEmployee = await newEmployee.save();
+        res.json(savedEmployee);
+
+    } catch (err) {
+        console.error('Error saving employee:', err);
+        res.status(500).json({ message: 'Error saving employee', error: err });
+    }
 });
 
 // Start server
 app.listen(3001, () => {
-  console.log("Server is running on http://localhost:3001");
+    console.log("Server is running on http://localhost:3001");
 });
+
+

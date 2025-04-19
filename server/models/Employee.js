@@ -23,20 +23,8 @@ const EmployeeSchema = new mongoose.Schema({
   },
 });
 
-// Hash password before saving
-EmployeeSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next(); // Skip if password is not modified
-
-  try {
-    const salt = await bcrypt.genSalt(10); // Generate salt
-    this.password = await bcrypt.hash(this.password, salt); // Hash the password
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
 
 // Create model based on schema
-const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
+const EmployeeModel = mongoose.model('Employees', EmployeeSchema);
 
 module.exports = EmployeeModel;
