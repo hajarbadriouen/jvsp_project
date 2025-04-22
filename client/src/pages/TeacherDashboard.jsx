@@ -1,5 +1,8 @@
 // src/pages/TeacherDashboard.jsx
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
     const [userData, setUserData] = useState(null);
@@ -28,16 +31,16 @@ const TeacherDashboard = () => {
     }, []);
 
     return (
-        <div>
+        <div className="dashboard-container">
             <h2>Teacher Dashboard</h2>
             {userData ? (
-                <div>
+                <div className="user-details">
                     <h3>Welcome, {userData.name}</h3>
                     <p>Email: {userData.email}</p>
                     <p>Role: {userData.role}</p>
                 </div>
             ) : (
-                <p>Loading...</p>
+                <p>No teacher data available.</p>
             )}
         </div>
     );

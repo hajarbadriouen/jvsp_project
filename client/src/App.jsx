@@ -18,8 +18,8 @@ function App() {
           
            <Route path='/login' element={<Login />} />
            <Route path='/register' element={<Signup />} />
-           <Route path="/student-dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
-           <Route path="/teacher-dashboard" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
+           <Route path="/student" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+           <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
        </Routes>
 
     

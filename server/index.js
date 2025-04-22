@@ -101,6 +101,89 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Middleware to check JWT token
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1]; // Get token from 'Authorization' header
+    
+    if (!token) {
+        return res.status(403).json({ message: 'Access Denied' });
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log("Decoded token:", decoded); // Log for debugging
+        req.user = decoded;  // Store decoded token data in the request object
+        next();  // Proceed to the next middleware or route handler
+    } catch (err) {
+        return res.status(400).json({ message: 'Invalid Token' });
+    }
+};
+
+
+// Route to fetch student data
+app.get('/student', verifyToken, async (req, res) => {
+    try {
+        console.log("Fetching student data for ID:", req.user.userId);
+
+        // Use the user ID stored in the token to fetch user data
+        const user = await EmployeeModel.findById(req.user.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send user data in the response
+        res.json({
+            user: {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+
+// Route to fetch teacher data
+app.get('/teacher', verifyToken, async (req, res) => {
+    try {
+        console.log("Fetching teacher data for ID:", req.user.userId);
+
+        // Check if the user is a teacher
+        if (req.user.role !== 'teacher') {
+            return res.status(403).json({ message: 'Access Denied: Not a teacher' });
+        }
+
+        // Use the user ID stored in the token to fetch user data
+        const user = await EmployeeModel.findById(req.user.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send teacher data in the response
+        res.json({
+            user: {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching teacher data:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+
+
+
 // Start server
 app.listen(3001, () => {
     console.log("Server is running on http://localhost:3001");

@@ -51,9 +51,9 @@ function Login() {
         localStorage.setItem("token", token);
   
         if (role === 'student') {
-          navigate('/student-dashboard');
+          navigate('/student');
         } else if (role === 'teacher') {
-          navigate('/teacher-dashboard');
+          navigate('/teacher');
         }
       } else {
         setError("Invalid credentials!");
