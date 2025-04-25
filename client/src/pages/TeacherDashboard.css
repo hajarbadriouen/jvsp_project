@@ -1,53 +1,66 @@
-
-.dashboard-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* TeacherDashboard.css */
+.teacher-dashboard-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-/* Header */
-.dashboard-container h2 {
-    font-size: 24px;
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 20px;
+h2 {
+  text-align: center;
 }
 
-/* Welcome message */
-.welcome-message {
-    font-size: 18px;
-    color: #2bcf8b;
-    text-align: center;
-    margin-bottom: 20px;
+.create-exam-form {
+  margin-bottom: 20px;
 }
 
-/* User details */
-.user-details {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.create-exam-form label {
+  display: block;
+  margin-bottom: 10px;
 }
 
-.user-details h3 {
-    font-size: 22px;
-    color: #c23dae;
-    text-align: center;
+.create-exam-form input,
+.create-exam-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
 }
 
-.user-details p {
-    font-size: 16px;
-    color: #7f8c8d;
-    margin: 8px 0;
-    text-align: center;
+button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-/* Error handling */
-.error-message {
-    color: red;
-    text-align: center;
-    font-size: 18px;
+button:hover {
+  background-color: #45a049;
+}
+
+.exam-card {
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.exam-card h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.exam-card p {
+  margin: 5px 0;
+}
+
+.exam-card button {
+  background-color: #008CBA;
+}
+
+.exam-card button:hover {
+  background-color: #007bb5;
+}
+
+.message {
+  color: red;
 }

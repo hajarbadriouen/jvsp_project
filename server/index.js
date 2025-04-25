@@ -181,9 +181,125 @@ app.get('/teacher', verifyToken, async (req, res) => {
 });
 
 
+// Route to fetch all exams (for teachers)
+const Exam = require('./models/Exam');
+
+// Create new exam
+app.post('/api/exams', verifyToken, async (req, res) => {
+    const { title, description } = req.body;
+    const teacherId = req.user.userId;  // Get teacher ID from JWT token
+  
+    try {
+      const newExam = new Exam({ title, description, teacherId });
+      await newExam.save();
+      res.status(201).json(newExam);
+    } catch (error) {
+      console.error('Error creating exam:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+});
+  
+// Get single exam by ID
+app.get('/api/exams/:examId', verifyToken, async (req, res) => {
+    const { examId } = req.params; // Extract examId from URL params
+
+    try {
+        const exam = await Exam.findById(examId);
+        if (!exam) {
+            return res.status(404).json({ message: 'Exam not found' });
+        }
+        
+        // Send exam data in the response
+        res.json(exam);
+    } catch (error) {
+        console.error('Error fetching exam:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 
 
+
+
+// PUT route to update an exam
+app.put('/api/exams/:examId', async (req, res) => {
+  const { examId } = req.params; // Get the examId from the URL parameter
+  const { title, description, targetAudience, examLink, questions, media } = req.body; // Get data from request body
+
+  try {
+    // Find the exam by ID and update it
+    const updatedExam = await Exam.findByIdAndUpdate(
+      examId,
+      {
+        title,
+        description,
+        targetAudience,
+        examLink,
+        questions, // Update questions field
+        media,
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedExam) {
+      return res.status(404).json({ message: 'Exam not found' });
+    }
+
+    // Return the updated exam document
+    res.json(updatedExam);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
+
+
+// Get all exams
+app.get('/api/exams', verifyToken, async (req, res) => {
+    try {
+      const teacherId = req.user.userId; // Get teacher ID from JWT token
+      const exams = await Exam.find({ teacherId }); // Filter exams by teacherId
+      res.json(exams);
+    } catch (error) {
+      console.error('Error fetching exams:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
+  // Route to generate a unique link for an exam
+app.post('/api/exams/:examId/generate-link', async (req, res) => {
+    const { examId } = req.params;
+    
+    try {
+      // Fetch exam details from the database
+      const exam = await Exam.findById(examId);
+      
+      if (!exam) {
+        return res.status(404).json({ message: 'Exam not found' });
+      }
+  
+      // Generate a unique link for the exam (you can customize this as needed)
+      const uniqueLink = `http://localhost:3001/exam/${examId}/access`;
+  
+      // Respond with the generated link
+      res.json({ link: uniqueLink });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
+
+
+
+
+
+  
 // Start server
 app.listen(3001, () => {
     console.log("Server is running on http://localhost:3001");

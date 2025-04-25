@@ -1,0 +1,78 @@
+/* General styling */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  
+  /* Card-style container for the exam content */
+  .card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Title styling */
+  h1, h2, h3 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  /* Form and input field styling */
+  input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  /* Add button style */
+  button, a.btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  button:hover, a.btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Styling for the list of questions */
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  li {
+    margin-bottom: 15px;
+  }
+  
+  li p {
+    font-weight: bold;
+  }
+  
+  li ul {
+    margin-left: 20px;
+  }
+  
+  /* Style for the options */
+  input[type="text"], select {
+    margin-bottom: 10px;
+  }
+  
+  textarea {
+    height: 100px;
+  }
+  

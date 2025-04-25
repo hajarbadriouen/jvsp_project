@@ -6,6 +6,8 @@ import Login from './login'
 import StudentDashboard from "./pages/StudentDashboard";  
 import TeacherDashboard from "./pages/TeacherDashboard";
 import ProtectedRoute from './ProtectedRoute';
+import ExamPage from './ExamPage';
+import EditExamPage from './EditExamPage';
 
 function App() {
   
@@ -20,6 +22,8 @@ function App() {
            <Route path='/register' element={<Signup />} />
            <Route path="/student" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
            <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
+           <Route path="/exam/:examId" element={<ExamPage />} />
+           <Route path='/exam/edit/:examId' element={<EditExamPage />} />
        </Routes>
 
     
