@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './EditExamPage.css'; // Import the CSS
 
 const EditExamPage = () => {
-  const { examId } = useParams(); // Get examId from the URL
+  const { examId } = useParams();
   const navigate = useNavigate();
-
+  const [exams, setExams] = useState([]);
   const [exam, setExam] = useState({ title: '', description: '', targetAudience: '', examLink: '', questions: [] });
   const [newQuestion, setNewQuestion] = useState('');
   const [newOptions, setNewOptions] = useState(['', '', '', '']);
@@ -16,12 +16,14 @@ const EditExamPage = () => {
   const [tolerance, setTolerance] = useState('');
   const [duration, setDuration] = useState('');
   const [score, setScore] = useState('');
+  const [loading, setLoading] = useState(true); // <<< You forgot to define loading
+
   const handleAddQuestion = () => {
     if (!exam || !Array.isArray(exam.questions)) {
       console.error("Exam or exam.questions is undefined.");
       return;
     }
-  
+
     const newQuestionObject = {
       question: newQuestion,
       options: newOptions,
@@ -33,14 +35,14 @@ const EditExamPage = () => {
       duration,
       score,
     };
-  
+
     const updatedExam = {
       ...exam,
-      questions: [...exam.questions, newQuestionObject], // Don't mutate state directly
+      questions: [...exam.questions, newQuestionObject],
     };
-  
+
     setExam(updatedExam);
-  
+
     // Reset inputs
     setNewQuestion('');
     setNewOptions(['', '', '', '']);
@@ -52,71 +54,85 @@ const EditExamPage = () => {
     setDuration('');
     setScore('');
   };
-  
+
   const handleSaveExam = async () => {
     try {
-      const token = localStorage.getItem('token'); // Assuming the JWT token is in localStorage
-
-      // Prepare the request payload
+      const token = localStorage.getItem('token');
+  
       const payload = {
         title: exam.title,
         description: exam.description,
         targetAudience: exam.targetAudience,
         examLink: exam.examLink,
-        questions: exam.questions, // Questions are already an array, no need to stringify here
+        questions: exam.questions,
       };
-
-      if (media) {
-        payload.media = media;
-      }
   
       const response = await fetch(`http://localhost:3001/api/exams/${examId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json', 
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (!response.ok) throw new Error('Failed to update exam');
-
+  
       console.log('Exam saved successfully');
-      navigate('/teacher'); // Redirect after saving
+      
+      // Refetch exam after save
+      fetchExam();  // Call the function to fetch the updated data
     } catch (error) {
       console.error('Error saving exam:', error);
     }
   };
-
-  useEffect(() => {
-    const fetchExam = async () => {
-      try {
-        const token = localStorage.getItem('token'); // Assuming JWT token is stored in localStorage
-        const response = await fetch(`http://localhost:3001/api/exams/${examId}`, {
-          method: 'GET', // Use GET for fetching exam details
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-    
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        setExam(data); // Set the exam data in state
-      } catch (error) {
-        console.error('Error fetching exam:', error);
-      }
-    };
+   
+  const fetchExam = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3001/api/exams/${examId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
   
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('Fetched data:', data); 
+      if (Array.isArray(data)) {
+        setExams(data);
+        setExam(data[0]);
+      } else if (data) {
+        setExams([data]);
+        setExam(data);
+      } else {
+        console.error('No data received:', data);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching exam:', error);
+    } finally {
+      setLoading(false);
+    }  
+  };
+  
+  // Now useEffect just calls it:
+  useEffect(() => {
     fetchExam();
   }, [examId]);
   
-   // Function to generate the unique exam link
-   const generateLink = async () => {
+  
+
+  const generateLink = async () => {
     try {
+      console.log("Exam ID:", examId);
+
       const token = localStorage.getItem('token');
 
       const response = await fetch(`http://localhost:3001/api/exams/${examId}/generate-link`, {
@@ -134,7 +150,6 @@ const EditExamPage = () => {
       const data = await response.json();
       const generatedLink = data.link;
 
-      // Update the exam state with the new link
       setExam((prevExam) => ({
         ...prevExam,
         examLink: generatedLink,
@@ -144,6 +159,10 @@ const EditExamPage = () => {
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container">
       <div className="card">
@@ -151,6 +170,7 @@ const EditExamPage = () => {
         <p>{exam.description}</p>
 
         <h3>Create Exam Details</h3>
+
         <label htmlFor="examTitle">Titre de l'examen :</label>
         <input
           type="text"
@@ -159,14 +179,15 @@ const EditExamPage = () => {
           value={exam.title || ''}
           onChange={(e) => setExam({ ...exam, title: e.target.value })}
         />
+
         <label htmlFor="examDescription">Description :</label>
         <textarea
           id="examDescription"
           placeholder="Description de l'examen"
           value={exam.description || ''}
-          
           onChange={(e) => setExam({ ...exam, description: e.target.value })}
         />
+
         <label htmlFor="targetAudience">Public ciblé :</label>
         <input
           type="text"
@@ -175,30 +196,32 @@ const EditExamPage = () => {
           value={exam.targetAudience || ''}
           onChange={(e) => setExam({ ...exam, targetAudience: e.target.value })}
         />
-       <label htmlFor="examLink">Lien unique d'accès :</label>
-      <input
-        type="text"
-        id="examLink"
-        value={exam.examLink || ''}
-        disabled
-      />
-      
-      
-      <button type="button" onClick={generateLink} className="btn">
-        Générer un lien unique
-      </button>
+
+        <label htmlFor="examLink">Lien unique d'accès :</label>
+        <input
+          type="text"
+          id="examLink"
+          value={exam.examLink || ''}
+          disabled
+        />
+
+        <button type="button" onClick={generateLink} className="btn">
+          Générer un lien unique
+        </button>
       </div>
 
       <div className="card">
         <h3>Add a Question</h3>
+
         <label htmlFor="questionType">Type de question :</label>
         <select
           id="questionType"
           value={questionType || ''}
           onChange={(e) => setQuestionType(e.target.value)}
         >
-          <option value="direct">Question directe</option>
-          <option value="qcm">QCM</option>
+         <option value="direct">Question directe</option>
+         <option value="multiple-choice">QCM</option>
+
         </select>
 
         <label htmlFor="questionText">Énoncé de la question :</label>
@@ -255,7 +278,7 @@ const EditExamPage = () => {
 
             <label htmlFor="correctAnswers">Réponses correctes (pour QCM) :</label>
             <select
-              value={correctAnswer || ''}
+              value={correctAnswer}
               onChange={(e) => setCorrectAnswer(parseInt(e.target.value))}
             >
               {newOptions.map((option, index) => (
@@ -296,13 +319,15 @@ const EditExamPage = () => {
           {exam.questions.map((question, index) => (
             <li key={index}>
               <p>{question.question}</p>
-              <ul>
-                {question.options.map((option, i) => (
-                  <li key={i}>
-                    {option} {i === question.correctAnswer ? '(Correct)' : ''}
-                  </li>
-                ))}
-              </ul>
+              {question.options && question.options.length > 0 && (
+                <ul>
+                  {question.options.map((option, i) => (
+                    <li key={i}>
+                      {option} {i === question.correctAnswer ? '(Correct)' : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>

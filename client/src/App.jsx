@@ -8,6 +8,8 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import ProtectedRoute from './ProtectedRoute';
 import ExamPage from './ExamPage';
 import EditExamPage from './EditExamPage';
+import QuestionPage from './QuestionPage';
+
 
 function App() {
   
@@ -24,6 +26,9 @@ function App() {
            <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
            <Route path="/exam/:examId" element={<ExamPage />} />
            <Route path='/exam/edit/:examId' element={<EditExamPage />} />
+           <Route path="/exam/:examId/access" element={<ExamPage />} />
+           <Route path="question/:id" element={<QuestionPage />} />
+          
        </Routes>
 
     

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { v4: uuidv4 } = require('uuid');  // Import uuid for unique link generation
 
 // Define question schema separately for nesting
 const questionSchema = new Schema({
@@ -17,6 +18,7 @@ const questionSchema = new Schema({
   score: String,
 });
 
+// Exam Schema
 const examSchema = new Schema({
   title: {
     type: String,
@@ -31,7 +33,19 @@ const examSchema = new Schema({
     ref: 'Employee',
     required: true
   },
+  examLink: {
+    type: String,  // Unique URL for each exam
+    default: () => uuidv4(), // Generate a unique exam link using uuid
+  },
   questions: [questionSchema] // Embed the questions directly
+});
+
+// Create a pre-save hook to generate the link if it's not set yet (optional)
+examSchema.pre('save', function (next) {
+  if (!this.examLink) {
+    this.examLink = uuidv4(); // Generate a unique link if not set
+  }
+  next();
 });
 
 const Exam = mongoose.model('Exam', examSchema);

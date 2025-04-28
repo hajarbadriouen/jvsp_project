@@ -271,31 +271,42 @@ app.get('/api/exams', verifyToken, async (req, res) => {
   });
   
   // Route to generate a unique link for an exam
-app.post('/api/exams/:examId/generate-link', async (req, res) => {
+  app.post('/api/exams/:examId/generate-link', async (req, res) => {
     const { examId } = req.params;
-    
+  
+    if (!mongoose.Types.ObjectId.isValid(examId)) {
+      return res.status(400).json({ message: 'Invalid exam ID format' });
+    }
+  
     try {
-      // Fetch exam details from the database
       const exam = await Exam.findById(examId);
-      
       if (!exam) {
         return res.status(404).json({ message: 'Exam not found' });
       }
   
-      // Generate a unique link for the exam (you can customize this as needed)
-      const uniqueLink = `http://localhost:3001/exam/${examId}/access`;
-  
-      // Respond with the generated link
+      const uniqueLink = `http://localhost:5173/question/${examId}`;
       res.json({ link: uniqueLink });
   
     } catch (error) {
-      console.error(error);
+      console.error('Error generating link:', error);
       res.status(500).json({ message: 'Server error' });
     }
   });
+ 
+  
   
 
-
+  app.get('/api/exams/:id', (req, res) => {
+    const examId = req.params.id;
+    // Ensure examId is valid and handle accordingly
+    Exam.findById(examId)
+      .then(exam => {
+        if (!exam) return res.status(404).send({ message: 'Exam not found' });
+        res.status(200).send(exam);
+      })
+      .catch(err => res.status(400).send({ message: 'Error fetching exam' }));
+  });
+  
 
 
 
@@ -304,5 +315,3 @@ app.post('/api/exams/:examId/generate-link', async (req, res) => {
 app.listen(3001, () => {
     console.log("Server is running on http://localhost:3001");
 });
-
-

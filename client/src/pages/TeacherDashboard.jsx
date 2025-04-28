@@ -9,37 +9,37 @@ const TeacherDashboard = () => {
 
   const fetchExams = async () => {
     try {
-      const token = localStorage.getItem('token');  // Assuming token is stored in localStorage
-  
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/exams', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`  // Include the token in the Authorization header
+          'Authorization': `Bearer ${token}`
         }
       });
-  
+
       if (!response.ok) {
         throw new Error('Error fetching exams');
       }
-  
+
       const data = await response.json();
-  
-      // Ensure data is an array before setting state
+      console.log('Fetched data:', data);
+
       if (Array.isArray(data)) {
         setExams(data);
+      } else if (data) {
+        setExams([data]); // 👈 wrap the single object into an array
       } else {
-        console.error('Expected an array of exams, but got:', data);
+        console.error('No data received:', data);
       }
     } catch (err) {
       console.error('Error fetching exams:', err);
     }
   };
-  
+
   useEffect(() => {
     fetchExams();
   }, []);
-  
 
   const goToExamPage = (examId) => {
     navigate(`/exam/edit/${examId}`);
@@ -47,30 +47,29 @@ const TeacherDashboard = () => {
 
   const handleCreateExam = async (title, description) => {
     try {
-      const token = localStorage.getItem('token');  // Assuming token is stored in localStorage
-  
+      const token = localStorage.getItem('token');
+
       const response = await fetch('http://localhost:3001/api/exams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`  // Include the token in the Authorization header
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ title, description })
       });
-  
+
       if (!response.ok) {
         throw new Error('Error creating exam');
       }
-  
+
       const data = await response.json();
-      setExams([...exams, data]);  // Add the newly created exam to the state
+      setExams((prevExams) => [...prevExams, data]);  // Add the newly created exam to the state
       setNewTitle('');
       setNewDescription('');
     } catch (error) {
       console.error('Error creating exam:', error);
     }
   };
-  
 
   return (
     <div>
