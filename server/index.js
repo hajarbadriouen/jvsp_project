@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Import JWT for token creation
 const EmployeeModel = require('./models/Employee');
+const Submission = require('./models/Submission');
 
 const app = express();
 app.use(express.json());
@@ -307,8 +308,111 @@ app.get('/api/exams', verifyToken, async (req, res) => {
       .catch(err => res.status(400).send({ message: 'Error fetching exam' }));
   });
   
+  app.post('/api/submitAnswer', async (req, res) => {
+    try {
+        const { examId, questionId, answer, tolerance } = req.body;
 
+        if (!examId || !questionId || answer === undefined) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
 
+        // Fetch the exam from MongoDB
+        const exam = await Exam.findById(examId);
+        if (!exam) {
+            return res.status(404).json({ error: 'Exam not found' });
+        }
+
+        // Find the question by its ID
+        const question = exam.questions.id(questionId);
+        if (!question) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        let isCorrect = false;
+
+        // Normalize answer and correct answer
+        let normalizedAnswer = answer;
+        let normalizedCorrectAnswer = question.correctAnswer;
+
+        // Convert both to numbers, if possible
+        normalizedAnswer = !isNaN(normalizedAnswer) ? Number(normalizedAnswer) : normalizedAnswer;
+        normalizedCorrectAnswer = !isNaN(normalizedCorrectAnswer) ? Number(normalizedCorrectAnswer) : normalizedCorrectAnswer;
+
+        // Debugging logs for better visibility
+        console.log('Normalized Answer:', normalizedAnswer);
+        console.log('Normalized Correct Answer:', normalizedCorrectAnswer);
+
+        // Answer check for different types of questions
+        if (question.questionType === 'multiple-choice') {
+            // Ensure correct answer comparison for multiple choice
+            isCorrect = normalizedAnswer === question.options[question.correctAnswer];
+            console.log('Multiple choice answer check:', isCorrect);
+        } else {
+            // Handle direct answers (e.g., number or string)
+            if (typeof normalizedCorrectAnswer === 'string' || typeof normalizedCorrectAnswer === 'number') {
+                isCorrect = normalizedAnswer === normalizedCorrectAnswer;
+                console.log('Direct answer check:', isCorrect);
+            } else if (Array.isArray(normalizedCorrectAnswer)) {
+                // Handle case for multiple correct answers (array)
+                isCorrect = normalizedCorrectAnswer.includes(normalizedAnswer);
+                console.log('Array answer check:', isCorrect);
+            }
+        }
+
+        // Save the user's answer to the exam
+        exam.questions.id(questionId).userAnswer = answer;  // Store the user's answer
+        await exam.save();  // Save the exam document
+
+        // Provide feedback based on the result
+        if (isCorrect) {
+            res.status(200).json({ message: 'Correct answer' });
+        } else {
+            res.status(200).json({ message: 'Incorrect answer' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+  
+ // Route to edit an exam (update exam and its questions)
+app.put('/api/exams/edit/:examId', async (req, res) => {
+    try {
+      const { examId } = req.params; // Get the exam ID from URL parameters
+      const { questions } = req.body; // Get the questions data from the request body
+  
+      // Find the exam by ID
+      const exam = await Exam.findById(examId);
+      if (!exam) {
+        return res.status(404).json({ error: 'Exam not found' });
+      }
+  
+      // Loop through each question in the provided data and update it
+      exam.questions.forEach((question, index) => {
+        const updatedQuestion = questions[index]; // The updated question sent from the client
+        
+        // If the question type is 'direct', store the actual correct answer (not an index)
+        if (updatedQuestion.questionType === 'direct') {
+          question.correctAnswer = updatedQuestion.correctAnswer;  // Store the direct answer value
+        } else if (updatedQuestion.questionType === 'multiple-choice') {
+          question.correctAnswer = updatedQuestion.correctAnswerIndex;  // Store the index for multiple-choice questions
+        }
+      });
+  
+      // Save the updated exam document
+      await exam.save();
+  
+      // Send a response back indicating the exam was updated
+      res.status(200).json({ message: 'Exam updated successfully' });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error while updating exam' });
+    }
+  });
+   
+  
 
   
 // Start server

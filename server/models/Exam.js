@@ -1,21 +1,21 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { v4: uuidv4 } = require('uuid');  // Import uuid for unique link generation
+const { v4: uuidv4 } = require('uuid');
 
 // Define question schema separately for nesting
 const questionSchema = new Schema({
   question: { type: String, required: true },
-  options: [String],
-  correctAnswer: Number,
-  questionType: String,
+  options: [String], // Only for multiple-choice questions
+  correctAnswer: { type: Schema.Types.Mixed, required: true }, // Allowing either string or number
+  questionType: { type: String, enum: ['direct', 'multiple-choice'], required: true }, // Ensuring valid question type
   media: {
-    type: Object, // or change to String if you're just storing a URL
+    type: Object, // Can store any media data (e.g., image, video) for the question
     default: null
   },
-  answer: String,
-  tolerance: String,
-  duration: String,
-  score: String,
+  answer: String, // Can be used to store the student's answer if needed
+  tolerance: { type: Number, default: 0 }, // Default tolerance value
+  duration: { type: Number, default: 30 }, // Default duration for the question
+  score: { type: Number, default: 1 }, // Default score for the question
 });
 
 // Exam Schema
