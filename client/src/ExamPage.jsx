@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+
 // The Edit Exam Page component
 const EditExamPage = () => {
   const [exam, setExam] = useState({
@@ -50,11 +51,20 @@ const EditExamPage = () => {
     setMedia(null);
     setTolerance('');
   };
- 
 
   const handleSaveExam = () => {
     // Here, you would save the exam to the database (e.g., via an API call)
     console.log('Exam saved:', exam);
+  };
+
+  const handleAddOption = () => {
+    setNewOptions([...newOptions, '']);
+  };
+
+  const handleOptionChange = (index, value) => {
+    const updatedOptions = [...newOptions];
+    updatedOptions[index] = value;
+    setNewOptions(updatedOptions);
   };
 
   return (
@@ -156,18 +166,19 @@ const EditExamPage = () => {
           <>
             <label htmlFor="options">Options (pour QCM) :</label>
             {newOptions.map((option, index) => (
-              <input
-                key={index}
-                type="text"
-                placeholder={`Option ${index + 1}`}
-                value={option || ''}
-                onChange={(e) => {
-                  const options = [...newOptions];
-                  options[index] = e.target.value;
-                  setNewOptions(options);
-                }}
-              />
+              <div key={index}>
+                <input
+                  type="text"
+                  placeholder={`Option ${index + 1}`}
+                  value={option}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                />
+              </div>
             ))}
+
+            <button type="button" onClick={handleAddOption}>
+              Ajouter une option
+            </button>
 
             <label htmlFor="correctAnswers">Réponses correctes (pour QCM) :</label>
             <select

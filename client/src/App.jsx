@@ -10,6 +10,7 @@ import ExamPage from './ExamPage';
 import EditExamPage from './EditExamPage';
 import QuestionPage from './QuestionPage';
 
+import Home from './Home';
 
 function App() {
   
@@ -18,8 +19,8 @@ function App() {
      <BrowserRouter>
     
        <Routes> 
-           
-          
+           <Route path="/" element={<Home />} />
+           <Route path="/exam/:id/access" element={<QuestionPage />} />
            <Route path='/login' element={<Login />} />
            <Route path='/register' element={<Signup />} />
            <Route path="/student" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
@@ -28,7 +29,8 @@ function App() {
            <Route path='/exam/edit/:examId' element={<EditExamPage />} />
            <Route path="/exam/:examId/access" element={<ExamPage />} />
            <Route path="question/:id" element={<QuestionPage />} />
-          
+         
+
        </Routes>
 
     

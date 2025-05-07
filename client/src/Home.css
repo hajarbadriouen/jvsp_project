@@ -1,0 +1,82 @@
+/* General container */
+.home-container {
+    min-height: 100vh;
+    background-color: #f0f9ff; /* light blue */
+    padding: 20px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #1e3a8a; /* deep blue text */
+  }
+  
+  /* Top bar */
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Connect button */
+  .connect-button {
+    padding: 10px 20px;
+    background-color: #3b82f6; /* blue */
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+  }
+  
+  .connect-button:hover {
+    background-color: #2563eb; /* darker blue */
+  }
+  
+  /* Main content */
+  .main-content {
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+  }
+  
+  /* Title and subtitle */
+  .title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1d4ed8;
+    margin-bottom: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 1.125rem;
+    color: #475569;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Section titles */
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: left;
+    color: #1e3a8a;
+  }
+  
+  .section-title.center {
+    text-align: center;
+  }
+  
+  /* Feature lists */
+  .feature-list {
+    text-align: left;
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    color: #334155;
+    margin-bottom: 2.5rem;
+  }
+  
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 60px;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+  

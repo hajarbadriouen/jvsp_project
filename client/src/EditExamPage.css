@@ -1,78 +1,164 @@
-/* General styling */
 .container {
-    width: 80%;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
-  
-  /* Card-style container for the exam content */
-  .card {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Title styling */
-  h1, h2, h3 {
-    color: #333;
-    margin-bottom: 10px;
-  }
-  
-  /* Form and input field styling */
-  input, select, textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-  }
-  
-  /* Add button style */
-  button, a.btn {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-  }
-  
-  button:hover, a.btn:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Styling for the list of questions */
-  ul {
-    list-style-type: none;
-    padding-left: 0;
-  }
-  
-  li {
-    margin-bottom: 15px;
-  }
-  
-  li p {
-    font-weight: bold;
-  }
-  
-  li ul {
-    margin-left: 20px;
-  }
-  
-  /* Style for the options */
-  input[type="text"], select {
-    margin-bottom: 10px;
-  }
-  
-  textarea {
-    height: 100px;
-  }
-  
+  width: 50%;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #f9f5ff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(128, 0, 128, 0.2);
+  font-family: 'Poppins', sans-serif;
+  color: #4b0082;
+}
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+h2, h3 {
+  margin-bottom: 10px;
+}
+
+.exam-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.form-group {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+}
+
+input[type="text"], textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+button {
+  background-color: #7b57d6;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #6b49b7;
+}
+
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(128, 0, 128, 0.1);
+}
+
+h2, h3 {
+  color: #6a0dad;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.3rem;
+  border: 2px solid #d8b4fe;
+  border-radius: 0.5rem;
+  background-color: #faf5ff;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.3rem;
+  border: 2px solid #d8b4fe;
+  border-radius: 0.5rem;
+  background-color: #faf5ff;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #a855f7;
+  outline: none;
+}
+
+button {
+  display: block;
+  background-color: #a855f7;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  margin: 1rem auto 0 auto;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #9333ea;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  background-color: #ede9fe;
+  margin-bottom: 0.8rem;
+  padding: 0.8rem;
+  border-radius: 0.8rem;
+  color: #5b21b6;
+}
+
+.option-input input {
+  margin-bottom: 0.5rem;
+}
+
+input[type="file"] {
+  border: none;
+  background-color: transparent;
+}

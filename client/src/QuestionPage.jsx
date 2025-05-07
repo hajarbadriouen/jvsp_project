@@ -1,19 +1,23 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function QuestionPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [exam, setExam] = useState(null); 
-  const [questions, setQuestions] = useState([]); // Store all questions
-  const [questionIndex, setQuestionIndex] = useState(0); // Track the current question index
-  const [answer, setAnswer] = useState(""); // The answer state
+  const [questions, setQuestions] = useState([]);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitMessage, setSubmitMessage] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(0); 
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimeOver, setIsTimeOver] = useState(false);
-  const [result, setResult] = useState(null); 
+  const [result, setResult] = useState(null);
+
+  // Retrieve studentId from localStorage (same as in StudentDashboard)
+  const studentId = localStorage.getItem('userId'); // Ensure this key exists in localStorage
 
   useEffect(() => {
     if (!id) {
@@ -25,17 +29,16 @@ function QuestionPage() {
 
     setLoading(true);
 
-    // Fetch exam data with Authorization token
     axios.get(`http://localhost:3001/api/exams/${id}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then((response) => {
         const foundExam = response.data;
         setExam(foundExam);
-        setQuestions(foundExam.questions); // Store all questions
-        setTimeRemaining(foundExam.questions[0]?.duration || 0); // Set timer for first question
+        setQuestions(foundExam.questions);
+        setTimeRemaining(foundExam.questions[0]?.duration || 0);
         setLoading(false);
       })
       .catch((error) => {
@@ -62,66 +65,56 @@ function QuestionPage() {
     return () => clearInterval(timer);
   }, [timeRemaining]);
 
-  const handleAnswerChange = (e) => setAnswer(e.target.value);
+  const handleAnswerChange = (e) => {
+    const newAnswers = [...answers];
+    newAnswers[questionIndex] = e.target.value;
+    setAnswers(newAnswers);
+  };
 
-  const handleSubmit = () => {
-    console.log("Submit clicked");
-  
-    if (loading || isTimeOver) return;
-  
-    const currentQuestion = questions[questionIndex];
-    console.log("Submitting answer for question:", currentQuestion);
-    console.log("Answer being sent:", answer); // Debugging answer value
-  
-    console.log("Making API request...");
-  
-    axios.post('http://localhost:3001/api/submitAnswer', {
-      examId: id,
-      questionId: currentQuestion._id,
-      answer: answer,
-      tolerance: currentQuestion?.tolerance,
-    })
-      .then(response => {
-        console.log('Response from server:', response.data); // Debugging server response
-        const { isCorrect, toleranceApplied, score } = response.data;
-        setSubmitMessage(isCorrect ? 'Correct answer!' : 'Incorrect answer.');
-        setResult({
-          tolerance: toleranceApplied,
-          score: score,
-        });
-        setAnswer(""); // Clear the answer field after submission
-      })
-      .catch(error => {
-        console.error('Error while submitting answer:', error); // Debugging error
-        setSubmitMessage('Failed to submit answer. Please try again.');
-      });
-  };
-  
-  const updateExam = async (examId, updatedQuestions) => {
-    const response = await fetch(`/api/exams/edit/${examId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        questions: updatedQuestions,
-      }),
-    });
-  
-    const data = await response.json();
-    if (response.ok) {
-      console.log('Exam updated successfully:', data);
-    } else {
-      console.error('Error updating exam:', data.error);
+  const handleSubmitAll = () => {
+    if (!studentId) {
+      console.error('Student ID is missing.');
+      setSubmitMessage('Student ID is missing. Please log in again.');
+      return;
     }
+
+    const submissionData = questions.map((question, index) => ({
+      questionId: question._id,
+      answer: answers[index] || '',
+    }));
+
+    axios.post('http://localhost:3001/api/submissions/submit', {
+      studentId,        // Ensure studentId is available
+      examId: id,       // exam ID
+      answers: submissionData
+    })
+    .then(response => {
+      const { message, submission } = response.data;
+
+      setSubmitMessage(message);
+      setResult({
+        finalScore: submission.totalScore,
+        maxScore: submission.answers.length * 100
+      });
+
+      // Redirect to dashboard and pass the submitted exam
+      navigate('/student', { state: { justSubmitted: submission } });
+    })
+    .catch(error => {
+      console.error('Error while submitting all answers:', error);
+      setSubmitMessage('Failed to submit answers. Please try again.');
+    });
   };
-  
+
   const handleNextQuestion = () => {
+    if (answers[questionIndex] === undefined || answers[questionIndex] === '') {
+      alert('Please answer the question before moving to the next one.');
+      return;
+    }
     if (questionIndex < questions.length - 1) {
       setQuestionIndex(prevIndex => prevIndex + 1);
-      setAnswer(""); // Reset the answer field
       setTimeRemaining(questions[questionIndex + 1]?.duration || 0);
-      setIsTimeOver(false); // Reset the timer for the next question
+      setIsTimeOver(false);
     }
   };
 
@@ -149,7 +142,7 @@ function QuestionPage() {
                 type="radio"
                 name={`question-${currentQuestion._id}`}
                 value={option}
-                checked={answer === option}
+                checked={answers[questionIndex] === option}
                 onChange={handleAnswerChange}
               />
               {option}
@@ -157,28 +150,32 @@ function QuestionPage() {
           ))}
         </div>
       ) : (
-        <textarea value={answer} onChange={handleAnswerChange} placeholder="Your answer here" />
+        <textarea value={answers[questionIndex]} onChange={handleAnswerChange} placeholder="Your answer here" />
       )}
 
-      <button 
-        onClick={handleSubmit} 
-        disabled={loading || !answer || isTimeOver}
-      >
-        Submit Answer
-      </button>
+      {questionIndex === questions.length - 1 && (
+        <button 
+          onClick={handleSubmitAll} 
+          disabled={loading || !answers[questionIndex] || isTimeOver}
+        >
+          Submit All Answers
+        </button>
+      )}
 
       {submitMessage && <div>{submitMessage}</div>}
 
-      {result && (
+      {result && result.finalScore !== undefined && (
         <div>
-          <p><strong>Tolerance Applied: </strong>{result.tolerance}%</p>
-          <p><strong>Final Mark: </strong>{result.score} / 100</p>
+          <h3>Exam Completed!</h3>
+          <p><strong>Total Score: </strong>{result.finalScore} / {result.maxScore}</p>
         </div>
       )}
 
-      <button onClick={handleNextQuestion} disabled={questionIndex === questions.length - 1}>
-        Next Question
-      </button>
+      {questionIndex < questions.length - 1 && (
+        <button onClick={handleNextQuestion}>
+          Next Question
+        </button>
+      )}
     </div>
   );
 }

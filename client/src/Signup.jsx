@@ -43,6 +43,8 @@ function Signup() {
       <div className="signup-form-container"> 
         <h2>Register</h2> 
         <form onSubmit={handleSubmit}> 
+          
+          {/* Name Input */}
           <div className="mb-3"> 
             <label htmlFor="name"> 
               <strong>Name</strong> 
@@ -57,6 +59,7 @@ function Signup() {
             />
           </div>
           
+          {/* Email Input */}
           <div className="mb-3">
             <label htmlFor="email"> 
               <strong>Email</strong>
@@ -71,12 +74,14 @@ function Signup() {
             />
           </div>
   
+          {/* Password Input */}
           <PasswordInput
             label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)} 
           />
           
+          {/* Role Selection */}
           <div className="mb-3">
             <label htmlFor="role">
               <strong>Role</strong>
@@ -93,18 +98,19 @@ function Signup() {
             </select>
           </div>
           
-          <button type="submit" className="btn btn-success w-100">
+          {/* Submit Button */}
+          <button type="submit" className="btn w-100">
             Register
           </button>  
         </form>
         
+        {/* Link to Login Page */}
         <div className="login-link">
           Already have an Account? <Link to="/login">Login</Link>
         </div>
       </div>
     </div>
   );
-  
 }
 
 export default Signup;

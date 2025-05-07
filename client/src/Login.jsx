@@ -47,8 +47,11 @@ function Login() {
       if (result.data.token) {
         const token = result.data.token;
         const role = result.data.user.role; // correctly accessed from user object
-  
+        const userId = result.data.user._id; 
         localStorage.setItem("token", token);
+        localStorage.setItem("userId", userId);
+       
+        localStorage.setItem("role", role);
   
         if (role === 'student') {
           navigate('/student');
@@ -70,41 +73,42 @@ function Login() {
 
   return (
     <div className="auth-wrapper">
-      <div className="auth-form-container"> 
-        <h2>Login</h2> 
-        <form onSubmit={handleSubmit}> 
-          <div className="mb-3">
-            <label htmlFor="email">
-              <strong>Email</strong>
-            </label>   
-            <input
-              type="email"
-              placeholder="Enter email"
-              autoComplete="off"
-              name="email"
-              className="form-control"
-              onChange={(e) => setEmail(e.target.value)} 
-            />
-          </div>
-  
-          <PasswordInput 
-            label="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)} 
+    <div className="auth-form-container">
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="email">
+            <strong>Email</strong>
+          </label>   
+          <input
+            type="email"
+            placeholder="Enter email"
+            autoComplete="off"
+            name="email"
+            className="form-control"
+            onChange={(e) => setEmail(e.target.value)} 
           />
-          
-          {error && <div className="alert alert-danger">{error}</div>}
-          
-          <button type="submit" className="btn btn-success w-100" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>  
-        </form>
-  
-        <div className="register-link">
-          Don't have an account? <Link to="/register">Register</Link>
         </div>
+  
+        <PasswordInput 
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+  
+        {error && <div className="alert alert-danger">{error}</div>}
+  
+        <button type="submit" className="btn w-100" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+  
+      <div className="register-link">
+        Don't have an account? <Link to="/register">Register</Link>
       </div>
     </div>
+  </div>
+  
   );
   
 }

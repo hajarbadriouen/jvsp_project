@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Import JWT for token creation
 const EmployeeModel = require('./models/Employee');
 const Submission = require('./models/Submission');
-
+const Exam = require('./models/Exam'); // Import the Exam model
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -49,6 +49,7 @@ app.post("/login", async (req, res) => {
             message: "Login successful",
             token:token, // Send the token in response
             user: {
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -182,8 +183,7 @@ app.get('/teacher', verifyToken, async (req, res) => {
 });
 
 
-// Route to fetch all exams (for teachers)
-const Exam = require('./models/Exam');
+
 
 // Create new exam
 app.post('/api/exams', verifyToken, async (req, res) => {
@@ -201,21 +201,24 @@ app.post('/api/exams', verifyToken, async (req, res) => {
 });
   
 // Get single exam by ID
-app.get('/api/exams/:examId', verifyToken, async (req, res) => {
-    const { examId } = req.params; // Extract examId from URL params
+app.get('/api/exams/:examId', async (req, res) => {
+  const { examId } = req.params;
 
-    try {
-        const exam = await Exam.findById(examId);
-        if (!exam) {
-            return res.status(404).json({ message: 'Exam not found' });
-        }
-        
-        // Send exam data in the response
-        res.json(exam);
-    } catch (error) {
-        console.error('Error fetching exam:', error);
-        res.status(500).json({ message: 'Server error' });
+  // Validate if examId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(examId)) {
+    return res.status(400).json({ message: 'Invalid exam ID format' });
+  }
+
+  try {
+    const exam = await Exam.findById(examId);
+    if (!exam) {
+      return res.status(400).json({ message: 'Exam not found' });
     }
+    res.json(exam);
+  } catch (error) {
+    console.error('Error fetching exam details:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 
@@ -297,7 +300,7 @@ app.get('/api/exams', verifyToken, async (req, res) => {
   
   
 
-  app.get('/api/exams/:id', (req, res) => {
+ app.get('/api/exams/:id', (req, res) => {
     const examId = req.params.id;
     // Ensure examId is valid and handle accordingly
     Exam.findById(examId)
@@ -307,73 +310,9 @@ app.get('/api/exams', verifyToken, async (req, res) => {
       })
       .catch(err => res.status(400).send({ message: 'Error fetching exam' }));
   });
-  
-  app.post('/api/submitAnswer', async (req, res) => {
-    try {
-        const { examId, questionId, answer, tolerance } = req.body;
 
-        if (!examId || !questionId || answer === undefined) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
 
-        // Fetch the exam from MongoDB
-        const exam = await Exam.findById(examId);
-        if (!exam) {
-            return res.status(404).json({ error: 'Exam not found' });
-        }
 
-        // Find the question by its ID
-        const question = exam.questions.id(questionId);
-        if (!question) {
-            return res.status(404).json({ error: 'Question not found' });
-        }
-
-        let isCorrect = false;
-
-        // Normalize answer and correct answer
-        let normalizedAnswer = answer;
-        let normalizedCorrectAnswer = question.correctAnswer;
-
-        // Convert both to numbers, if possible
-        normalizedAnswer = !isNaN(normalizedAnswer) ? Number(normalizedAnswer) : normalizedAnswer;
-        normalizedCorrectAnswer = !isNaN(normalizedCorrectAnswer) ? Number(normalizedCorrectAnswer) : normalizedCorrectAnswer;
-
-        // Debugging logs for better visibility
-        console.log('Normalized Answer:', normalizedAnswer);
-        console.log('Normalized Correct Answer:', normalizedCorrectAnswer);
-
-        // Answer check for different types of questions
-        if (question.questionType === 'multiple-choice') {
-            // Ensure correct answer comparison for multiple choice
-            isCorrect = normalizedAnswer === question.options[question.correctAnswer];
-            console.log('Multiple choice answer check:', isCorrect);
-        } else {
-            // Handle direct answers (e.g., number or string)
-            if (typeof normalizedCorrectAnswer === 'string' || typeof normalizedCorrectAnswer === 'number') {
-                isCorrect = normalizedAnswer === normalizedCorrectAnswer;
-                console.log('Direct answer check:', isCorrect);
-            } else if (Array.isArray(normalizedCorrectAnswer)) {
-                // Handle case for multiple correct answers (array)
-                isCorrect = normalizedCorrectAnswer.includes(normalizedAnswer);
-                console.log('Array answer check:', isCorrect);
-            }
-        }
-
-        // Save the user's answer to the exam
-        exam.questions.id(questionId).userAnswer = answer;  // Store the user's answer
-        await exam.save();  // Save the exam document
-
-        // Provide feedback based on the result
-        if (isCorrect) {
-            res.status(200).json({ message: 'Correct answer' });
-        } else {
-            res.status(200).json({ message: 'Incorrect answer' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
 
   
  // Route to edit an exam (update exam and its questions)
@@ -411,10 +350,68 @@ app.put('/api/exams/edit/:examId', async (req, res) => {
       res.status(500).json({ error: 'Server error while updating exam' });
     }
   });
-   
+  
+  
   
 
-  
+// Route to submit answers for an exam
+app.post('/api/submissions/submit', async (req, res) => {
+    const { studentId, examId, answers } = req.body; // Get data from request body
+
+    try {
+        // Create a new submission document
+        const newSubmission = new Submission({
+            studentId,
+            examId,
+            answers,
+        });
+
+        // Save the submission to the database
+        await newSubmission.save();
+        res.status(201).json({ message: 'Submission successful', submission: newSubmission });
+    } catch (error) {
+        console.error('Error submitting answers:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+ 
+// Route to fetch submissions for a specific student
+app.get('/api/submissions/student/:studentId', async (req, res) => {
+    const { studentId } = req.params; // Get student ID from URL parameters
+
+    try {
+        // Fetch submissions for the specified student
+        const submissions = await Submission.find({ studentId }).populate('examId'); // Populate examId to get exam details
+
+        if (!submissions.length) {
+            return res.status(404).json({ message: 'No submissions found for this student' });
+        }
+
+        res.status(200).json(submissions);
+    } catch (error) {
+        console.error('Error fetching submissions:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+app.post('/api/exams/:examId/submit', (req, res) => {
+  const { examId } = req.params;
+  const { answers } = req.body;
+
+  // Log answers before saving
+  console.log('Saving answers for examId:', examId, 'Answers:', answers);
+
+  ExamSubmission.create({ examId, answers })
+    .then(submission => {
+      res.status(200).json(submission);
+    })
+    .catch(error => {
+      console.error('Error saving submission:', error);
+      res.status(500).json({ message: 'Error saving submission' });
+    });
+});
+
 // Start server
 app.listen(3001, () => {
     console.log("Server is running on http://localhost:3001");

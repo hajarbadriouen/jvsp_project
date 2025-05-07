@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './TeacherDashboard.css'; // <-- Don't forget this line
 
 const TeacherDashboard = () => {
   const [exams, setExams] = useState([]);
@@ -23,14 +24,10 @@ const TeacherDashboard = () => {
       }
 
       const data = await response.json();
-      console.log('Fetched data:', data);
-
       if (Array.isArray(data)) {
         setExams(data);
       } else if (data) {
-        setExams([data]); // 👈 wrap the single object into an array
-      } else {
-        console.error('No data received:', data);
+        setExams([data]);
       }
     } catch (err) {
       console.error('Error fetching exams:', err);
@@ -63,7 +60,7 @@ const TeacherDashboard = () => {
       }
 
       const data = await response.json();
-      setExams((prevExams) => [...prevExams, data]);  // Add the newly created exam to the state
+      setExams((prevExams) => [...prevExams, data]);
       setNewTitle('');
       setNewDescription('');
     } catch (error) {
@@ -72,15 +69,19 @@ const TeacherDashboard = () => {
   };
 
   return (
-    <div>
-      <h2>Teacher Dashboard</h2>
-
-      <h3>Create Exam</h3>
+    <div className="page-container">
+    <h2 className="welcome-title">Welcome, Teacher! 🎓</h2>
+    <p className="welcome-subtitle">Manage your exams easily from your dashboard.</p>
+  
+    {/* Create Exam Form */}
+    <div className="create-exam-card">
+      <h3>Create a New Exam</h3>
       <form onSubmit={(e) => {
         e.preventDefault();
         handleCreateExam(newTitle, newDescription);
       }}>
         <input
+          className="exam-input"
           type="text"
           placeholder="Exam Title"
           value={newTitle}
@@ -88,27 +89,36 @@ const TeacherDashboard = () => {
           required
         />
         <textarea
+          className="exam-textarea"
           placeholder="Exam Description"
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
           required
         ></textarea>
-        <button type="submit">Create Exam</button>
+        <button className="create-exam-button" type="submit">Create Exam</button>
       </form>
-
-      <h3>Created Exams</h3>
+    </div>
+  
+    {/* Created Exams */}
+    <div className="created-exams-section">
+      <h3>Your Created Exams</h3>
       {exams.length === 0 ? (
         <p>No exams created yet.</p>
       ) : (
-        exams.map((exam) => (
-          <div key={exam._id} className="exam-card">
-            <h4>{exam.title}</h4>
-            <p>{exam.description}</p>
-            <button onClick={() => goToExamPage(exam._id)}>Go to Exam</button>
-          </div>
-        ))
+        <div className="exams-grid">
+          {exams.map((exam) => (
+            <div key={exam._id} className="exam-card">
+              <h4>{exam.title}</h4>
+              <p>{exam.description}</p>
+              <button onClick={() => goToExamPage(exam._id)}>Go to Exam</button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
+  </div>
+  
+  
   );
 };
 

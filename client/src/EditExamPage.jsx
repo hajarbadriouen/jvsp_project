@@ -127,8 +127,6 @@ const EditExamPage = () => {
     fetchExam();
   }, [examId]);
   
-  
-
   const generateLink = async () => {
     try {
       console.log("Exam ID:", examId);
@@ -166,48 +164,56 @@ const EditExamPage = () => {
   return (
     <div className="container">
       <div className="card">
-        <h2>Edit Exam - {exam.title}</h2>
+        <h2>{exam.title}</h2>
         <p>{exam.description}</p>
 
         <h3>Create Exam Details</h3>
 
-        <label htmlFor="examTitle">Titre de l'examen :</label>
-        <input
-          type="text"
-          id="examTitle"
-          placeholder="Ex : Examen de Mathématiques"
-          value={exam.title || ''}
-          onChange={(e) => setExam({ ...exam, title: e.target.value })}
-        />
+        <form className="exam-form">
+          <div className="form-group">
+            <label htmlFor="examTitle">Titre de l'examen :</label>
+            <input
+              type="text"
+              id="examTitle"
+              placeholder="Ex : Examen de Mathématiques"
+              value={exam.title || ''}
+              onChange={(e) => setExam({ ...exam, title: e.target.value })}
+            />
+          </div>
 
-        <label htmlFor="examDescription">Description :</label>
-        <textarea
-          id="examDescription"
-          placeholder="Description de l'examen"
-          value={exam.description || ''}
-          onChange={(e) => setExam({ ...exam, description: e.target.value })}
-        />
+          <div className="form-group">
+            <label htmlFor="examDescription">Description :</label>
+            <textarea
+              id="examDescription"
+              placeholder="Description de l'examen"
+              value={exam.description || ''}
+              onChange={(e) => setExam({ ...exam, description: e.target.value })}
+            />
+          </div>
 
-        <label htmlFor="targetAudience">Public ciblé :</label>
-        <input
-          type="text"
-          id="targetAudience"
-          placeholder="Ex : 2e année SMI, S4, groupe A"
-          value={exam.targetAudience || ''}
-          onChange={(e) => setExam({ ...exam, targetAudience: e.target.value })}
-        />
+          <div className="form-group">
+            <label htmlFor="targetAudience">Public ciblé :</label>
+            <input
+              type="text"
+              id="targetAudience"
+              placeholder="Ex : 2e année SMI, S4, groupe A"
+              value={exam.targetAudience || ''}
+              onChange={(e) => setExam({ ...exam, targetAudience: e.target.value })}
+            />
+          </div>
 
-        <label htmlFor="examLink">Lien unique d'accès :</label>
-        <input
-          type="text"
-          id="examLink"
-          value={exam.examLink || ''}
-          disabled
-        />
+          <div className="form-group">
+            <label htmlFor="examLink">Lien unique d'accès :</label>
+            <input
+              type="text"
+              id="examLink"
+              value={exam.examLink || ''}
+              disabled
+            />
+          </div>
 
-        <button type="button" onClick={generateLink} className="btn">
-          Générer un lien unique
-        </button>
+          <button type="button" onClick={generateLink}>Générer un lien unique</button>
+        </form>
       </div>
 
       <div className="card">
@@ -216,12 +222,11 @@ const EditExamPage = () => {
         <label htmlFor="questionType">Type de question :</label>
         <select
           id="questionType"
-          value={questionType || ''}
+          value={questionType}
           onChange={(e) => setQuestionType(e.target.value)}
         >
-         <option value="direct">Question directe</option>
-         <option value="multiple-choice">QCM</option>
-
+          <option value="direct">Question directe</option>
+          <option value="multiple-choice">QCM</option>
         </select>
 
         <label htmlFor="questionText">Énoncé de la question :</label>
@@ -259,28 +264,41 @@ const EditExamPage = () => {
           max="100"
         />
 
-        {questionType === 'qcm' && (
+        {questionType === 'multiple-choice' && (
           <>
             <label htmlFor="options">Options (pour QCM) :</label>
+
             {newOptions.map((option, index) => (
-              <input
-                key={index}
-                type="text"
-                placeholder={`Option ${index + 1}`}
-                value={option || ''}
-                onChange={(e) => {
-                  const options = [...newOptions];
-                  options[index] = e.target.value;
-                  setNewOptions(options);
-                }}
-              />
+              <div key={index} className="option-input">
+                <input
+                  type="text"
+                  placeholder={`Option ${index + 1}`}
+                  value={option || ''}
+                  onChange={(e) => {
+                    const options = [...newOptions]; // Copy the options array
+                    options[index] = e.target.value; // Update the value for the current option
+                    setNewOptions(options); // Update state with the new options array
+                  }}
+                />
+              </div>
             ))}
 
+            <button
+              type="button"
+              onClick={() => {
+                setNewOptions([...newOptions, '']); // Add an empty string for a new option
+              }}
+            >
+              Add Option
+            </button>
+
             <label htmlFor="correctAnswers">Réponses correctes (pour QCM) :</label>
+
             <select
               value={correctAnswer}
               onChange={(e) => setCorrectAnswer(parseInt(e.target.value))}
             >
+              <option value="">Select the correct answer</option>
               {newOptions.map((option, index) => (
                 <option key={index} value={index}>
                   {option}
