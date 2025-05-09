@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Home.css'; // Import the CSS
+import './Home.css'; 
 
 const Home = () => {
   return (
@@ -12,7 +12,7 @@ const Home = () => {
         </Link>
       </div>
 
-      {/* Main Content */}
+    
       <div className="main-content">
         <h1 className="title">OnlineExam</h1>
         <p className="subtitle">
